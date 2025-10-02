@@ -516,7 +516,17 @@
         <div class="table">
             <!-- Zone du croupier -->
             <div class="dealer-area">
-                <div class="area-label">🎩 Croupier</div>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div class="dealer-avatar">
+                        <img src="https://i.postimg.cc/GmGvBJyK/croupier-antoine.jpg" alt="Antoine" style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #FFD700; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                    </div>
+                    <div>
+                        <div class="area-label" style="margin-bottom: 5px;">🎩 Antoine - Croupier</div>
+                        <div class="dealer-message" id="dealerMessage" style="color: #FFD700; font-style: italic; min-height: 25px; font-size: 1.1em;">
+                            "Bienvenue à ma table ! 😎"
+                        </div>
+                    </div>
+                </div>
                 <div class="cards-container" id="dealerCards"></div>
                 <div class="hand-value" id="dealerValue"></div>
             </div>
@@ -604,6 +614,95 @@
         const suits = ['♠️', '♥️', '♦️', '♣️'];
         const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
+        // Messages d'Antoine
+        const antoineMessages = {
+            welcome: [
+                "Bienvenue à ma table ! 😎",
+                "Prêt à perdre ton argent ? 😏",
+                "C'est moi le patron ici ! 🎩"
+            ],
+            deal: [
+                "C'est parti ! Bonne chance... tu vas en avoir besoin ! 😈",
+                "Voyons voir ta main... intéressant ! 🤔",
+                "Hmm, pas mal... mais j'ai mieux ! 😏",
+                "Allez, montre-moi ce que tu as ! 💪"
+            ],
+            playerHit: [
+                "Une carte de plus ? Attention au bust ! 😅",
+                "Tu te sens chanceux aujourd'hui ? 🎲",
+                "Courage, tu vas y arriver... ou pas ! 😂",
+                "Encore une ? Tu vis dangereusement ! 🔥"
+            ],
+            playerGoodHand: [
+                "Pas mal du tout... 😬",
+                "Tu commences à me faire peur ! 😰",
+                "Ok, tu es bon... mais je suis meilleur ! 😤",
+                "Belle main, mais ce n'est pas encore fini ! 🎯"
+            ],
+            playerStand: [
+                "Ah, tu restes ? Sage décision... ou pas ! 😏",
+                "Voyons si c'est suffisant ! 🎴",
+                "À mon tour de briller ! ✨",
+                "Tu crois vraiment pouvoir me battre ? 😎"
+            ],
+            playerBust: [
+                "BUST ! Trop facile ! 😂😂😂",
+                "Dommage ! La maison gagne toujours ! 💰",
+                "C'est ça quand on est trop gourmand ! 🤷",
+                "Merci pour ta contribution ! 💸",
+                "Encore raté ! Essaie encore ! 😜"
+            ],
+            dealerWin: [
+                "Victoire pour la maison ! Comme d'habitude ! 👑",
+                "Trop facile ! Tu veux retenter ta chance ? 💪",
+                "La chance du débutant n'existe pas ici ! 😎",
+                "Je suis imbattable aujourd'hui ! 🏆",
+                "Peut-être la prochaine fois ! 😏"
+            ],
+            playerWin: [
+                "Bien joué... tu as eu de la chance ! 😤",
+                "Profites-en, ça n'arrivera pas souvent ! 😒",
+                "Ok ok, tu as gagné... cette fois ! 🙄",
+                "Pas mal ! Mais je reviendrai plus fort ! 💪",
+                "Félicitations ! Remise à zéro dans 3, 2, 1... 😈"
+            ],
+            playerBlackjack: [
+                "BLACKJACK !? Impossible ! 😱",
+                "Wow... respect ! Mais c'était de la chance ! 🍀",
+                "Sérieux ?! OK tu es bon... 😅",
+                "Un BlackJack ! Savoure ce moment ! 🎉"
+            ],
+            push: [
+                "Égalité ! On reprend tout ! 🤝",
+                "Pas de vainqueur cette fois ! ⚖️",
+                "Match nul ! La prochaine est pour moi ! 😏",
+                "On est à égalité... pour l'instant ! 🎯"
+            ],
+            dealerBust: [
+                "Non ! J'ai bust... 😫",
+                "Argh ! Pas possible ! 😤",
+                "Tu as eu de la chance là ! 🍀",
+                "Je me suis emballé... bravo ! 😒"
+            ],
+            lowBalance: [
+                "Il te reste pas grand chose ! 💸",
+                "Tu veux que je te prête de l'argent ? 😂",
+                "Bientôt ruiné ! 📉",
+                "Encore quelques parties et c'est fini ! 😈"
+            ]
+        };
+
+        function getRandomMessage(category) {
+            const messages = antoineMessages[category];
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function setDealerMessage(text, delay = 0) {
+            setTimeout(() => {
+                document.getElementById('dealerMessage').textContent = `"${text}"`;
+            }, delay);
+        }
+
         function selectCapital(amount) {
             selectedCapital = amount;
             document.querySelectorAll('.capital-option').forEach(opt => {
@@ -618,6 +717,7 @@
             document.getElementById('gameScreen').classList.add('active');
             updateDisplay();
             createDeck();
+            setDealerMessage(getRandomMessage('welcome'));
         }
 
         function createDeck() {
@@ -708,6 +808,8 @@
             document.getElementById('standBtn').disabled = false;
             document.getElementById('doubleBtn').disabled = playerHand.length !== 2 || balance < currentBet;
 
+            setDealerMessage(getRandomMessage('deal'));
+
             updateDisplay();
             renderCards();
 
@@ -724,13 +826,21 @@
 
             playerHand.push(deck.pop());
             document.getElementById('doubleBtn').disabled = true;
+            
+            setDealerMessage(getRandomMessage('playerHit'));
+            
             renderCards();
 
             const playerValue = calculateHandValue(playerHand);
+            
+            if (playerValue >= 19 && playerValue <= 20) {
+                setTimeout(() => setDealerMessage(getRandomMessage('playerGoodHand')), 600);
+            }
+            
             if (playerValue > 21) {
-                endGame('bust');
+                setTimeout(() => endGame('bust'), 800);
             } else if (playerValue === 21) {
-                stand();
+                setTimeout(() => stand(), 600);
             }
         }
 
@@ -743,10 +853,12 @@
             document.getElementById('standBtn').disabled = true;
             document.getElementById('doubleBtn').disabled = true;
 
+            setDealerMessage(getRandomMessage('playerStand'));
+
             renderCards();
 
             // Le croupier tire jusqu'à 17
-            setTimeout(() => dealerPlay(), 800);
+            setTimeout(() => dealerPlay(), 1200);
         }
 
         function doubleDown() {
@@ -786,15 +898,20 @@
             const dealerBJ = isBlackjack(dealerHand);
 
             if (playerBJ && !dealerBJ) {
-                endGame('blackjack');
+                setDealerMessage(getRandomMessage('playerBlackjack'), 300);
+                setTimeout(() => endGame('blackjack'), 800);
             } else if (dealerValue > 21) {
-                endGame('win');
+                setDealerMessage(getRandomMessage('dealerBust'), 300);
+                setTimeout(() => endGame('win'), 800);
             } else if (playerValue > dealerValue) {
-                endGame('win');
+                setDealerMessage(getRandomMessage('playerWin'), 300);
+                setTimeout(() => endGame('win'), 800);
             } else if (playerValue < dealerValue) {
-                endGame('lose');
+                setDealerMessage(getRandomMessage('dealerWin'), 300);
+                setTimeout(() => endGame('lose'), 800);
             } else {
-                endGame('push');
+                setDealerMessage(getRandomMessage('push'), 300);
+                setTimeout(() => endGame('push'), 800);
             }
         }
 
@@ -829,6 +946,7 @@
                     losses++;
                     message = `💥 BUST ! Vous avez dépassé 21. Vous perdez ${currentBet}€`;
                     showMessage(message, 'lose');
+                    setDealerMessage(getRandomMessage('playerBust'), 500);
                     break;
                 case 'push':
                     balance += currentBet;
@@ -836,6 +954,11 @@
                     message = `🤝 Égalité ! Mise remboursée`;
                     showMessage(message, 'push');
                     break;
+            }
+
+            // Message si le solde est bas
+            if (balance > 0 && balance < selectedCapital * 0.3) {
+                setTimeout(() => setDealerMessage(getRandomMessage('lowBalance')), 2000);
             }
 
             addToHistory(result, currentBet, winAmount);
@@ -856,9 +979,10 @@
                         losses = 0;
                         pushes = 0;
                         document.getElementById('historyList').innerHTML = '';
+                        setDealerMessage(getRandomMessage('welcome'));
                         updateDisplay();
                     }
-                }, 1000);
+                }, 1500);
             }
         }
 
